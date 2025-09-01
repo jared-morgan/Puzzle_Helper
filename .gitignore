@@ -1,0 +1,60 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+pip-wheel-metadata/
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Virtual environments
+.venv/
+env/
+venv/
+.python-version
+
+# uv lock file (optional: you can push it if you want reproducible installs)
+uv.lock
+
+# VS Code settings
+.vscode/
+
+# mypy
+.mypy_cache/
+
+# ruff
+.ruff_cache/
+
+# PyCharm
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test outputs
+.coverage
+htmlcov/
+
+# Notes and scratch files
+notes.txt
+tests/
+TODO.txt
