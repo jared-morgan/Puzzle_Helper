@@ -58,3 +58,5 @@ htmlcov/
 notes.txt
 tests/
 TODO.txt
+pyinstaller text.txt
+old_code/
