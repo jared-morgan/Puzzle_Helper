@@ -1,10 +1,19 @@
 import pygame
+from pathlib import Path
+import pickle
 
 class Fray:
-    def __init__(self):
-        self.length_of_a_minute = 60
-        pass
+    def __init__(self, src_path: Path):
+        self.length_of_a_minute = 60 # Just used for debug purposes
+        self.load_punch_dictionary(src_path)
     
+
+    def load_punch_dictionary(self, src_path: Path):
+        punch_dictionary_locaton = src_path / Path("media", "punch_dictionary.pkl")
+        with open(punch_dictionary_locaton, 'rb') as file:            
+            self.punch_dictionary = pickle.load(file)
+
+
     def find_fray_duration(self, fray_time):
         fray_duration = (pygame.time.get_ticks() - fray_time) // 1000
         rumble_mins = fray_duration // self.length_of_a_minute # length_of_a_minute for quick debugging
@@ -86,3 +95,13 @@ class Fray:
             game_display.blit(rumble_time_elapsed_text, (25, 30))
 
         return rumble_sound_played
+    
+
+    def update_rumble(self, main):
+        #TODO Rumble calc
+        pass
+
+
+    def update_sf(self, main):
+        #TODO HOMU STUFF
+        pass
