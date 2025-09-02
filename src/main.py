@@ -14,8 +14,7 @@ class Main:
         pygame.init()
         pygame.mixer.init()
         pygame.display.set_caption('Pirate Helper')
-        self.pygame_display = pygame.display.set_mode((200, 600))
-        self.clock = pygame.time.Clock()
+        
 
         self.crashed = False
 
@@ -24,16 +23,22 @@ class Main:
         # self.img_puzzles_image = pygame.image.load(self.puzzles_image_path)
 
         self.configs = Configs()
-        self.gui = GUI(self.src_path)
+
+        self.pygame_display = pygame.display.set_mode((250, 600))
+        self.clock = pygame.time.Clock()
+
+        self.gui = GUI(self.src_path, self.configs.rumble_scaling)
         self.sounds = Sounds(self.src_path)
         self.chatlogs = Chatlogs()
         self.fray = Fray(self.src_path)
+        self.gui.create_homun_colour_bars(self)
 
         self.maximum_players = [4, 4, 3, 3, 2]
         self.vampire_delay = 2800
 
         self.swabbies_on_board = 0
         self.plank_swabbie = False
+        self.settings_menu_open = False
         
         self.reset_stats()
 
@@ -57,6 +62,24 @@ class Main:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.crashed = True
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_c:
+                    self.configs.mode = "CI"
+                elif event.key == pygame.K_v:
+                    self.configs.mode = "VL"
+                elif event.key == pygame.K_r:
+                    self.rumble_active = 0 if self.rumble_active else pygame.time.get_ticks()
+                elif event.key == pygame.K_s:
+                    self.sf_active = 0 if self.sf_active else pygame.time.get_ticks()
+
+            elif event.type == pygame.MOUSEBUTTONUP:
+                mouse_pos = pygame.mouse.get_pos()
+                self.fray.check_for_homun_click(main, mouse_pos, event.button)
+                if self.gui.copy_button.is_clicked(mouse_pos):
+                    self.fray.copy_homun_colours()
+                if self.gui.reset_button.is_clicked(mouse_pos):
+                    self.fray.reset_homun()
+
 
     
     def calculate_looting_timer(self):
@@ -87,6 +110,8 @@ class Main:
         
         while not self.crashed:
 
+            self.gui.reset_gui(main)
+
             self.process_events()
 
             self.chatlogs.update_chatlogs(main)
@@ -94,16 +119,18 @@ class Main:
             if self.chatlogs.new_lines:
                 self.chatlogs.process_updated_chatlogs(main)
 
-            if self.looting_active:
+            if self.settings_menu_open:
+                self.gui.update_settings_menu(main)
+
+            elif self.looting_active:
                 self.calculate_looting_timer()
 
             elif self.rumble_active:
-                self.fray.update_rumble()
+                self.fray.update_rumble(main)
 
             elif self.sf_active and self.configs.mode == "CI": # Only care about this for homus
-                self.fray.update_sf()
+                self.fray.update_sf(main)
 
-            
 
             self.gui.update_gui(main)
 

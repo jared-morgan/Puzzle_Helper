@@ -1,107 +1,91 @@
 import pygame
 from pathlib import Path
 import pickle
+# from code.listener import KeyListener
 
 class Fray:
     def __init__(self, src_path: Path):
-        self.length_of_a_minute = 60 # Just used for debug purposes
+        self.length_of_a_minute = 60 # Just used for quick debugging
         self.load_punch_dictionary(src_path)
-    
+        self.fray_minutes = 0
+        self.fray_seconds = 0
+        self.minute_approaching_sound_played = False
+
+        self.groups_needed = {0: "14-15", 1: "10-13", 2: "9-10", 3: "7-9", 4: "7-8",  5: "6-7", 6: "5-7", 7: "5-6", 8: "5-6", 9: "4-5", 10: "4-5", 11: "4-5"} # key is minutes passed, value is groups recommended
+        self.homun_count = {"red": 0, "green": 0, "blue": 0, "yellow": 0, "purple": 0, "orange": 0, "white": 0, "very_black": 0}
+        self.homun_colour_translate = {"red": "red", "green": "yellow", "blue": "red", "yellow": "blue", "purple": "green", "orange": "green", "white": "blue", "very_black": "yellow"}
+        self.homun_true_count = {"red": 0, "green": 0, "blue": 0, "yellow": 0}
 
     def load_punch_dictionary(self, src_path: Path):
-        punch_dictionary_locaton = src_path / Path("media", "punch_dictionary.pkl")
-        with open(punch_dictionary_locaton, 'rb') as file:            
-            self.punch_dictionary = pickle.load(file)
+        rumble_dictionary_locaton = src_path / Path("media", "rumble_dictionary.pkl")
+        with open(rumble_dictionary_locaton, 'rb') as file:            
+            self.rumble_dictionary = pickle.load(file)
 
 
-    def find_fray_duration(self, fray_time):
-        fray_duration = (pygame.time.get_ticks() - fray_time) // 1000
-        rumble_mins = fray_duration // self.length_of_a_minute # length_of_a_minute for quick debugging
-        if rumble_mins > 15:
-            rumble_mins = 15
-        return fray_duration, rumble_mins
+    def calculate_fray_duration(self, fray_time):
+        fray_duration = (pygame.time.get_ticks() - fray_time) // 1000 # time in seconds
+        self.fray_minutes, self.fray_seconds = divmod(fray_duration, self.length_of_a_minute) # length_of_a_minute for quick debugging
 
 
-    def rumble_timer(self, main, fray_time, rumble_sound_played, rumble_warning_sound):
-        fray_duration, rumble_mins = find_rumble_duration(fray_time)
-        if fray_duration % 60 < 50: # Change this if you want a warning for the minute mark at a different time
-            game_display.fill(black)
-            rumble_sound_played = False
-        elif fray_duration > 0 and rumble_warning_sound:
-            game_display.fill(blue)
-            if not rumble_sound_played:
-                pygame.mixer.Sound.play(warning)
-                rumble_sound_played = True
-
-        if fray_duration > -1:
-            rumble_table_start = [rumble_scaling*2+25, 92]
-            if is_window_large:
-
-                pygame.draw.rect(game_display, white, (rumble_table_start[0], rumble_table_start[1], (rumble_width*rumble_scaling)+4, (rumble_height*rumble_scaling)+4), 1)  # (x, y, width, height), 2 is the thickness
-                pygame.draw.rect(game_display, grey, (rumble_table_start[0]+1, rumble_table_start[1]+1, (rumble_width*rumble_scaling)+2, (rumble_height*rumble_scaling)+2), 1)
-                punch_start_location = [rumble_table_start[0]+2, rumble_table_start[1]+2 + (20 * rumble_scaling)]
-                greyscale_colour = grey
-                colourful_colour = yellow
-
-                for groups in punch_dictionary[rumble_mins]:
-                    #Minutes,Groups,Drop-off,Calc Rows,Difference,Base Width
-                    
-                    drop_off, length, difference, width = punch_dictionary[rumble_mins][groups][0], punch_dictionary[rumble_mins][groups][1], punch_dictionary[rumble_mins][groups][2], punch_dictionary[rumble_mins][groups][3]
-                    if 7 < length < 19:
-                        text_colour = colourful_colour
-                        block_colour = colourful_colour
-                        if colourful_colour == yellow:
-                            colourful_colour = gold
-                        else:
-                            colourful_colour = yellow
-                    else:
-                        text_colour = grey
-                        block_colour = greyscale_colour
-                        if greyscale_colour == grey:
-                            greyscale_colour = white
-                        else:
-                            greyscale_colour = grey
-                    
-                    punch_text = my_font_very_small.render(str(groups), True, text_colour)
-                    drop_off_text = my_font_very_very_small.render(str(drop_off), True, black)
-                    punch_start_location[1] -= difference * rumble_scaling
-                    
-                    if bars_as_natural_width:
-                        pygame.draw.rect(game_display, block_colour, (punch_start_location[0], punch_start_location[1], (rumble_width*rumble_scaling*width/9), (difference*rumble_scaling)))
-                    else:
-                        pygame.draw.rect(game_display, block_colour, (punch_start_location[0], punch_start_location[1], (rumble_width*rumble_scaling), (difference*rumble_scaling)))
-                    if groups > 9:
-                        game_display.blit(punch_text, (punch_start_location[0] - (rumble_scaling * 1.5), punch_start_location[1]))
-                    else:
-                        game_display.blit(punch_text, (punch_start_location[0] - (rumble_scaling * 0.85), punch_start_location[1]))
-                    if drop_off_numbers:
-                        game_display.blit(drop_off_text, (punch_start_location[0] + (rumble_scaling * 0.1), punch_start_location[1]))
-                        
-            else:
-                number_group_text = my_font_small.render(number_groups[rumble_mins],True, white)
-                game_display.blit(number_group_text, (25, 85))
-            
-            rumble_timer_colour = white
-
-            rumble_time_elapsed_text = my_font_med.render(str(int(math.floor(fray_duration // 60))) + ":" + str(int(math.floor(fray_duration % 60))), True, rumble_timer_colour)
-            
-
-            game_display.blit(rumble_time_elapsed_text, (25, 30))
-            # pygame.draw.rect(game_display, white, (rumble_table_start[0]+25, rumble_table_start[1], (rumble_width*rumble_scaling)+4-25, (10*rumble_scaling)+4))
-            # pygame.draw.rect(game_display, block_colour, (punch_start_location[0], punch_start_location[1], (rumble_width*rumble_scaling*width/9), (difference*rumble_scaling)))
-        elif fray_countdown_on:
-            rumble_timer_colour = white
-            rumble_time_elapsed_text = my_font_med.render("-0:" + str(60-int(math.floor(fray_duration % 60))), True, rumble_timer_colour)
-            game_display.blit(rumble_time_elapsed_text, (25, 30))
-
-        return rumble_sound_played
+    def should_it_play_warning(self, main):
+        if self.fray_seconds >49 and not self.minute_approaching_sound_played:
+            main.sounds.play_sound("warning")
+            self.minute_approaching_sound_played = True                     
     
 
     def update_rumble(self, main):
-        #TODO Rumble calc
-        pass
+        self.calculate_fray_duration(main.rumble_active)
+        self.should_it_play_warning(main)
+        main.gui.update_fray_time(self.fray_minutes, self.fray_seconds, "rumble")
+        if main.configs.mini_rumble:
+            main.gui.update_mini_rumble_groups(self.groups_needed[min(11, self.fray_minutes)]) # Pointless for longer than 11 minutes, honestly less.
+        else:
+            main.gui.draw_rumble_table(main, min(15, self.fray_minutes), self.rumble_dictionary)
 
 
-    def update_sf(self, main):
-        #TODO HOMU STUFF
-        pass
+    def update_sf(self, main):            
+        self.calculate_fray_duration(main.sf_active)
+        main.gui.update_fray_time(self.fray_minutes, self.fray_seconds, "sf")
+
+
+    def check_for_homun_click(self, main, pos, button):
+        for colour, rect in main.gui.homun_colour_bars.items():
+            if rect.collidepoint(pos):
+                self.add_homun(main, colour, button)
+
+    
+    def add_homun(self, main, colour, button):
+        if main.configs.mode != "CI" or not main.sf_active: return
+        sf_colour = self.homun_colour_translate[colour]
+        if button == 1:
+            self.homun_count[colour] += 1
+            self.homun_true_count[sf_colour] += 1
+        elif button == 3:
+            if self.homun_count[colour] > 0:
+                self.homun_true_count[sf_colour] = max(0, self.homun_true_count[sf_colour] - 1)
+            self.homun_count[colour] = max(0, self.homun_count[colour] - 1)
+        elif button == 2:
+            self.copy_homun_colours(sf_colour)
+
+
+    def reset_homun(self):
+        for colour in self.homun_count:
+            self.homun_count[colour] = 0
+        for colour in self.homun_true_count:
+            self.homun_true_count[colour] = 0
+
+    
+    def copy_homun_colours(self, targetting : str=""):
+        homun_count = "/ve."
+        sorted_homu_count = dict(sorted(self.homun_true_count.items(), key=lambda item: item[1], reverse=True))
+        for colour in sorted_homu_count:
+            count = sorted_homu_count[colour]
+            if count > 0:
+                homun_count += f"\n{count} {colour.upper()}"
+            if targetting == colour:
+                homun_count += " <-- target"
+        # if len(homun_count) > 3:
+        #     homun_count = homun_count[1:]
+        print(homun_count)
+        
+    
