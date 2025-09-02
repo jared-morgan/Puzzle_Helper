@@ -137,7 +137,10 @@ class GUI:
 
     
     def update_time_passed_text(self, main, time_passed):
-        time_passed = str(round(time_passed / 1000, main.configs.timer_decimals))
+        if main.configs.timer_decimals == 0: # if timer decimals is 0, round to nearest second
+            time_passed = str(round(time_passed / 1000))
+        else:
+            time_passed = str(round(time_passed / 1000, main.configs.timer_decimals))
         self.looting_timer = self.my_font_84.render(time_passed, True, self.colours["white"])
 
 

@@ -71,6 +71,8 @@ class Main:
                     self.rumble_active = 0 if self.rumble_active else pygame.time.get_ticks()
                 elif event.key == pygame.K_s:
                     self.sf_active = 0 if self.sf_active else pygame.time.get_ticks()
+                elif event.key == pygame.K_l:
+                    self.looting_active = 0 if self.looting_active else pygame.time.get_ticks()
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 mouse_pos = pygame.mouse.get_pos()
@@ -86,9 +88,9 @@ class Main:
         time_passed = pygame.time.get_ticks() - self.looting_active
         if time_passed > 120000: # 2 minutes
             self.looting_active = 0
-            if self.mode == "CI": 
+            if self.configs.mode == "CI": 
                 self.plank_swabbie_check()
-        self.gui.update_time_passed_text(self.time_passed)
+        self.gui.update_time_passed_text(main, time_passed)
 
     
     def plank_swabbie_check(self):

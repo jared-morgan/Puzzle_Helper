@@ -2,6 +2,7 @@ import pathlib as Path
 import io
 import re
 import pygame
+from typing import List, Tuple
 
 class Chatlogs:
     def __init__(self):
@@ -11,8 +12,8 @@ class Chatlogs:
         self.lines_history = ["" for _ in range(self.lines_to_read * 2)]
         self.new_lines = []
 
-        self.buy_strings = ["sell", "[s]", "wts", "free", "giving"]
-        self.sell_strings = ["buy", "[b]", "wtb", "lf", "looking"]
+        self.sell_strings = ["sell", "[s]", "wts", "free", "giving"]
+        self.buy_strings = ["buy", "[b]", "wtb", "lf", "looking"]
         self.end_of_ci_fray_strings = ["Ye have take", "With the isla", "Ye abandoned"]
         self.last_time_stamp = ""
 
@@ -65,40 +66,36 @@ class Chatlogs:
             if line not in self.lines_history:
                 self.new_lines.append(line)
                 self.lines_history.append(line)
-
-        # print(F"New lines: {self.new_lines}")
-
         self.lines_history = self.lines_history[-self.lines_to_read * 2:]
 
     
-    def split_buy_and_sell(self, message: str) -> tuple[list[str], list[str]]:
-        """
-        Splits the message into buy and sell parts.
-        Returns (buy_parts, sell_parts)
-        Each part keeps the keyword and following text until the next keyword.
-        """
-        all_keywords = self.buy_strings + self.sell_strings
+    def split_buy_and_sell(self, message: str) -> Tuple[List[str], List[str]]:
+        buy_set = {k.lower() for k in self.buy_strings}
+        sell_set = {k.lower() for k in self.sell_strings}
 
-        # Create a pattern to match any keyword
-        pattern = r"(" + "|".join(all_keywords) + r")"
-        parts = re.split(pattern, message, flags=re.IGNORECASE)
+        all_keywords = sorted(buy_set | sell_set, key=len, reverse=True)
+        if not all_keywords:
+            return [], []
+
+        # Match any keyword literally, case-insensitive
+        pattern = "(" + "|".join(re.escape(k) for k in all_keywords) + ")"
+        matches = list(re.finditer(pattern, message, flags=re.IGNORECASE))
+
+        if not matches:
+            return [], []
 
         buy_parts = []
         sell_parts = []
-        i = 0
-        while i < len(parts):
-            part = parts[i].strip()
-            if part.lower() in [k.lower() for k in self.buy_strings]:
-                combined = part
-                if i + 1 < len(parts):
-                    combined += " " + parts[i + 1].strip()
-                buy_parts.append(combined)
-            elif part.lower() in [k.lower() for k in self.sell_strings]:
-                combined = part
-                if i + 1 < len(parts):
-                    combined += " " + parts[i + 1].strip()
-                sell_parts.append(combined)
-            i += 1
+
+        for i, m in enumerate(matches):
+            start = m.start()
+            end = matches[i + 1].start() if i + 1 < len(matches) else len(message)
+            segment = message[start:end].strip()
+            keyword = m.group(1).lower()
+            if keyword in buy_set:
+                buy_parts.append(segment)
+            else:
+                sell_parts.append(segment)
 
         return buy_parts, sell_parts
 
@@ -133,26 +130,29 @@ class Chatlogs:
                     if re.search(search_string["regex"], line):
                         main.sounds.play_sound(search_string["sound"])
                     continue
-                if search_string["channel"] and search_string["channel"] != line.split(" ")[2]:
-                    continue
+                try:
+                    if search_string["channel"] and search_string["channel"] != line.split(" ")[2]:
+                        continue
+                except:
+                    continue # Someone posted a multiline message
                 if search_string["channel"] == "trade":
                     if not buy_and_sell_split:
                         buy_parts, sell_parts = self.split_buy_and_sell(line)
                         buy_and_sell_split = True
                     if search_string["buy_or_sell"] == "buy":
+
                         for string in search_string["strings"]:
-                            for part in buy_parts:
+                            for part in sell_parts:
                                 if string in part:
                                     main.sounds.play_sound(search_string["sound"])
                     elif search_string["buy_or_sell"] == "sell":
                         for string in search_string["strings"]:
-                            for part in sell_parts:
+                            for part in buy_parts:
                                 if string in part:
                                     main.sounds.play_sound(search_string["sound"])
                 else:
                     for string in search_string["strings"]:
                         if string in line:
-                            print(F"{search_string["sound"]}")
                             main.sounds.play_sound(search_string["sound"])
 
     
@@ -180,14 +180,13 @@ class Chatlogs:
                 main.rumble_active = False
 
             if self.swabbies_on_board > 0:
-                if "has left the vessel." in line:
+                if "has left the vessel." in line: #TODO make better
                     main.swabbies_on_board -= 1
 
             if line[11:34] == "The islanders reclaimed":
                 main.rumble_active = 0
                 main.sf_active = 0
-
-            elif line[11:20] in self.end_of_ci_fray_strings and not self.looting_active:
+            if line[11:23] in self.end_of_ci_fray_strings and not main.looting_active:
                 main.frays_won += 1
                 main.looting_active = True
                 main.looting_active = pygame.time.get_ticks() - main.configs.timer_offset
@@ -196,11 +195,12 @@ class Chatlogs:
 
             elif (line[11:33] == "Enlightened One says, "):
                 if not main.rumble_active:
-                    self.rumble_active = pygame.time.get_ticks() + 17000 - main.configs.timer_offset
+                    main.rumble_active = pygame.time.get_ticks() + 17000 - main.configs.timer_offset
 
             elif " Cultist shouts" in line and not (" says, \"" in line or " tells ye, '" in line): # Cultist can be named so can't use precise string location to avoid trolling.
                 if not main.sf_active:
-                    self.sf_active = pygame.time.get_ticks() + 17000 - main.configs.timer_offset
+                    main.sf_active = pygame.time.get_ticks() + 17000 - main.configs.timer_offset
+                    main.fray.reset_homun()
                     
             elif line[11:32] == "Vargas the Mad says,":
                 main.vargas_seen = True

@@ -1,6 +1,7 @@
 import pygame
 from pathlib import Path
 import pickle
+import pyperclip
 # from code.listener import KeyListener
 
 class Fray:
@@ -40,7 +41,7 @@ class Fray:
         if main.configs.mini_rumble:
             main.gui.update_mini_rumble_groups(self.groups_needed[min(11, self.fray_minutes)]) # Pointless for longer than 11 minutes, honestly less.
         else:
-            main.gui.draw_rumble_table(main, min(15, self.fray_minutes), self.rumble_dictionary)
+            main.gui.draw_rumble_table(main, min(15, self.fray_minutes + 1), self.rumble_dictionary)
 
 
     def update_sf(self, main):            
@@ -76,7 +77,7 @@ class Fray:
 
     
     def copy_homun_colours(self, targetting : str=""):
-        homun_count = "/ve."
+        homun_count = "/ve ."
         sorted_homu_count = dict(sorted(self.homun_true_count.items(), key=lambda item: item[1], reverse=True))
         for colour in sorted_homu_count:
             count = sorted_homu_count[colour]
@@ -84,8 +85,4 @@ class Fray:
                 homun_count += f"\n{count} {colour.upper()}"
             if targetting == colour:
                 homun_count += " <-- target"
-        # if len(homun_count) > 3:
-        #     homun_count = homun_count[1:]
-        print(homun_count)
-        
-    
+        pyperclip.copy(homun_count)
