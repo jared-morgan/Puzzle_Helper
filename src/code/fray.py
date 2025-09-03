@@ -25,7 +25,11 @@ class Fray:
 
     def calculate_fray_duration(self, fray_time):
         fray_duration = (pygame.time.get_ticks() - fray_time) // 1000 # time in seconds
-        self.fray_minutes, self.fray_seconds = divmod(fray_duration, self.length_of_a_minute) # length_of_a_minute for quick debugging
+        if fray_duration < 0:
+            self.fray_minutes, self.fray_seconds = -0, -fray_duration
+        
+        else:
+            self.fray_minutes, self.fray_seconds = divmod(fray_duration, self.length_of_a_minute) # length_of_a_minute for quick debugging
 
 
     def should_it_play_warning(self, main):

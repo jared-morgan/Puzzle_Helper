@@ -112,7 +112,7 @@ class GUI:
         if main.looting_active:
             main.pygame_display.blit(self.looting_timer, (0, 50))
         if main.plank_swabbie:
-            main.pygame_display.blit(self.plank_swabbie_text, (30, 0))
+            main.pygame_display.blit(self.plank_swabbie_text, (0, 30))
         if main.rumble_active or main.sf_active:
             main.pygame_display.blit(self.fray_time, (0, 50))
         if main.rumble_active:
@@ -144,9 +144,8 @@ class GUI:
         self.looting_timer = self.my_font_84.render(time_passed, True, self.colours["white"])
 
 
-    def update_plank_swabbie_text(self, main, plank_swabbie_colour):
-        colour = self.colours["white"] if plank_swabbie_colour else self.colours["red"]
-        self.plank_swabbie_text = self.my_font_32.render("Plank Swabbie!", True, colour)
+    def update_plank_swabbie_text(self, colour):
+        self.plank_swabbie_text = self.my_font_32.render("Plank Swabbie!", True, self.colours[colour]) # I don't think I want it to flash anymore
 
 
     def update_fray_time(self, fray_minutes, fray_seconds, fray_type):

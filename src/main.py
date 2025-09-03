@@ -69,10 +69,16 @@ class Main:
                     self.configs.mode = "VL"
                 elif event.key == pygame.K_r:
                     self.rumble_active = 0 if self.rumble_active else pygame.time.get_ticks()
+                    self.sf_active, self.looting_active = 0, 0
                 elif event.key == pygame.K_s:
                     self.sf_active = 0 if self.sf_active else pygame.time.get_ticks()
+                    self.rumble_active, self.looting_active = 0, 0
                 elif event.key == pygame.K_l:
                     self.looting_active = 0 if self.looting_active else pygame.time.get_ticks()
+                    self.rumble_active, self.sf_active = 0, 0
+                elif event.key == pygame.K_0: # Pressing 0 removes the plank swabbie alert incase counter was opened part way through the CI
+                    self.plank_swabbie = False
+                    self.swabbies_on_board = 0
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 mouse_pos = pygame.mouse.get_pos()
@@ -94,18 +100,31 @@ class Main:
 
     
     def plank_swabbie_check(self):
+        if self.swabbies_on_board == 0: 
+            return
+        
         player_count = self.players_on_board + self.swabbies_on_board
-        if player_count > self.maximum_players[self.frays_won]:
+        try:
+            max_players = self.maximum_players[self.frays_won]
+        except:
+            max_players = 2 # fray count larger than relevant indexes
+    
+
+        if player_count > max_players:
             self.plank_swabbie = True
         else:
             self.plank_swabbie = False
+
         if self.plank_swabbie:
-            indicator_in_white = (pygame.time.get_ticks() // self.plank_swabbie_flash_speed) % 2
-            self.gui.update_plank_swabbie_indicator(main, indicator_in_white)
+            # if (pygame.time.get_ticks() // self.plank_swabbie_flash_speed) % 2 == 0: # Disabled because I don't want it to flash.
+            #     plank_swabbie_colour = "red"
+            # else:
+            #     plank_swabbie_colour = "white"
+            self.gui.update_plank_swabbie_text("red")
             
-            if (pygame.time.get_ticks() - swabbie_alert_last_played > 6500) and self.configs.play_swabbie_warning_sound: # Delay between voice line
+            if (pygame.time.get_ticks() - self.swabbie_alert_last_played > 6500) and self.configs.play_swabbie_warning_sound:
                 self.sounds.play_sound("plank_swabbie")
-                swabbie_alert_last_played = pygame.time.get_ticks()
+                self.swabbie_alert_last_played = pygame.time.get_ticks()
         
 
     def run(self):

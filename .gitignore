@@ -55,9 +55,5 @@ Thumbs.db
 htmlcov/
 
 # Notes and scratch files
-notes.txt
+notes/
 tests/
-TODO.txt
-pyinstaller text.txt
-old_code/
-zzz.py
