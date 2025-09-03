@@ -183,9 +183,6 @@ class Chatlogs:
                 if "has left the vessel." in line: #TODO make better
                     main.swabbies_on_board -= 1
 
-            if line[11:34] == "The islanders reclaimed":
-                main.rumble_active = 0
-                main.sf_active = 0
             if line[11:23] in self.end_of_ci_fray_strings and not main.looting_active:
                 main.frays_won += 1
                 main.looting_active = True
@@ -193,6 +190,11 @@ class Chatlogs:
                 main.rumble_active = 0
                 main.sf_active = 0
 
+            if line[11:34] == "The islanders reclaimed":
+                main.rumble_active = 0
+                main.sf_active = 0
+                main.looting_active = False
+                
             elif (line[11:33] == "Enlightened One says, "):
                 if not main.rumble_active:
                     main.rumble_active = pygame.time.get_ticks() + 17000 - main.configs.timer_offset
