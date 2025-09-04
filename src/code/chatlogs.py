@@ -14,7 +14,7 @@ class Chatlogs:
 
         self.sell_strings = ["sell", "[s]", "wts", "free", "giving"]
         self.buy_strings = ["buy", "[b]", "wtb", "lf", "looking"]
-        self.end_of_ci_fray_strings = ["Ye have take", "With the isla", "Ye abandoned"]
+        self.end_of_ci_fray_strings = ["Ye have take", "With the isl", "Ye abandoned"]
         self.last_time_stamp = ""
 
         # [18:44:03] Vessels may be sunk while in these dangerous waters, enter at your own risk!
