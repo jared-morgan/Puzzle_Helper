@@ -124,6 +124,7 @@ class Chatlogs:
 
     def filter_chat(self, main): #TODO add ability to click to copy pirates name to clipboard
         for line in self.new_lines:
+            line = line.lower()
             buy_and_sell_split = False
             for search_string in main.configs.search_strings.values():
                 if search_string["regex"]:
@@ -140,7 +141,6 @@ class Chatlogs:
                         buy_parts, sell_parts = self.split_buy_and_sell(line)
                         buy_and_sell_split = True
                     if search_string["buy_or_sell"] == "buy":
-
                         for string in search_string["strings"]:
                             for part in sell_parts:
                                 if string in part:
