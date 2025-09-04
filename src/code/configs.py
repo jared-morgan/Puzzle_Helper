@@ -8,7 +8,7 @@ class Configs:
         self.name = self.file_path.stem.split("_")[0]
         self.search_strings = {
             # 1: {"channel": "trade", "buy_or_sell": "sell", "strings": ["ci map", "cursed island map", "cursed isles map"], "regex": r"(?=.*\bsell\w*\b)(?=.*\bci\b)"},
-            1: {"name": "Buying CI map", "channel": "trade", "buy_or_sell": "buy", "strings": ["ci map", "cursed island", "cursed isles", "ci of"], "regex": "", "sound": "trade_chat_sound.ogg"},
+            1: {"name": "Buying CI map", "channel": "trade", "buy_or_sell": "buy", "strings": ["ci map", "cursed island", "cursed isles", "ci of", "ci near"], "regex": "", "sound": "trade_chat_sound.ogg"},
             2: {"name": "Buying Vampire Reliq", "channel": "trade", "buy_or_sell": "buy", "strings": ["reliq", "vamp charm", "v charm", "vampire charm", "vampiric charm", "vampirate charm"], "regex": "", "sound": "trade_chat_sound.ogg"},
             3: {"name": "Buying WWW-Finder", "channel": "trade", "buy_or_sell": "buy", "strings": ["wayfinder", "way-finder" "wolf charm", "w charm", "ww charm", "werewolf charm", "werewolves charm"], "regex": "", "sound": "trade_chat_sound.ogg"},
             }
